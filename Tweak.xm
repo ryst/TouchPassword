@@ -1,5 +1,10 @@
 #include "STUtils/STUtils.h"
 
+@interface SBLockStateAggregator
++(id)sharedInstance;
+-(BOOL)hasAnyLockState;
+@end
+
 @interface UIKeyboardImpl : UIView;
 +(id)activeInstance;
 @property(assign, nonatomic) UIResponder<UIKeyInput>* delegate;
@@ -250,6 +255,10 @@ void receivedNotification(CFNotificationCenterRef center, void* observer, CFStri
 }
 
 void startMatching() {
+	// Do not activate if the device is locked, sometimes caused SpringBoard to crash
+	if ([[%c(SBLockStateAggregator) sharedInstance] hasAnyLockState])
+		return;
+
 	if (!addedObservers) {
 		// Add observer
 		CFNotificationCenterAddObserver(CFNotificationCenterGetDarwinNotifyCenter(), // center
